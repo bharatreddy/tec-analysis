@@ -1,0 +1,25 @@
+Arctic-Bay	arc	73.004093	274.973959	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Arviat	arv	61.097941	265.928533	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Cambridge-Bay	cbb	69.101929	254.884829	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Churchill	chu	58.759279	265.913402	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Coral-Harbour	cor	64.188201	276.650145	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Eureka	eur	79.990089	274.097557	GISTM/GPS	GSV4004B	Active	Summary	6-week delay
+Fort-McMurray	mcm	56.649535	248.779728	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Fort-Simpson	fsi	61.756554	238.771946	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Fort-Smith	fsm	60.026095	248.067109	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Gillam	gil	56.376600	265.356197	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Gjoa-Haven	gjo	68.632630	264.151719	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Grise-Fiord	gri	76.423281	277.096506	GISTM/GPS	PolaRxS	Inactive	n/a	n/a
+Hall-Beach	hal	68.767279	278.743539	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Iqaluit	iqa	63.737377	291.459735	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Kugluktuk	kug	67.817781	244.865276	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Ministik-Lake	edm	53.350818	247.026160	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Pond-Inlet	pon	72.693166	282.044956	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Qikiqtarjuaq	qik	67.559326	295.966340	GISTM/GPS	GSV4004B	Active	n/a	Unknown
+Rabbit-Lake	rab	58.226935	256.322945	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Rankin-Inlet	ran	62.824700	267.885291	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Repulse-Bay	rep	66.523589	273.768972	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Resolute	res	74.746627	264.997469	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Sachs-Harbour	sac	71.99063	234.739381	GISTM/GPS	PolaRxS	Active	Complete	Near-Real-time
+Sanikiluaq	san	56.536360	280.768771	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
+Taloyoak	tal	69.540923	266.443335	GISTM/GPS	GSV4004B	Active	Complete	Near-Real-time
