@@ -27,13 +27,29 @@ if __name__ == "__main__":
                  datetime.datetime( 2011, 8, 6, 3, 0 ),\
                  datetime.datetime( 2011, 8, 6, 3, 30 ),\
                  datetime.datetime( 2011, 8, 6, 4, 0 ) ]
+    # Store each DF in a list
+    rawTrghDFList = []
+    fltrdTrghDFList = []
     for inpDT in inpDtList:
         print "currently working with--->", inpDT
         trObj = locateTrough.TroughLocator( inpDT, "/home/bharat/Documents/AllTec/" )
         medFltrdTec = trObj.apply_median_filter()
         trLocDF = trObj.find_trough_loc(medFltrdTec)
         fltrdTrghLocDF = trObj.filter_trough_loc(trLocDF)
-        trObj.plotTecLocTrgh( trLocDF, medFltrdTec, \
-        "../figs/raw-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
-        trObj.plotTecLocTrgh( fltrdTrghLocDF, medFltrdTec, \
-            "../figs/fltrd-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
+        rawPltFile = figsFldr + "raw-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf"
+        fltrdPltFile = figsFldr + "fltrd-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf"
+        trObj.plotTecLocTrgh( trLocDF, medFltrdTec, rawPltFile )
+        trObj.plotTecLocTrgh( fltrdTrghLocDF, medFltrdTec, fltrdPltFile )
+        rawTrghDFList.append( trLocDF )
+        fltrdTrghDFList.append( fltrdTrghLocDF )
+        del trLocDF
+        del fltrdTrghLocDF
+    # Merge all the results into a final DF
+    finRawTrghDF = pandas.concat( rawTrghDFList )
+    finFltrdTrghDF = pandas.concat( fltrdTrghDFList )
+    # Store the results in a csv
+    finRawTrghDF.to_csv("../data/rawTrghLoc.txt", sep=' ',\
+                   index=False)
+    finFltrdTrghDF.to_csv("../data/fltrdTrghLoc.txt", sep=' ',\
+                   index=False)
+    print finFltrdTrghDF
