@@ -5,10 +5,14 @@ if __name__ == "__main__":
     trObj = locateTrough.TroughLocator( inpDT, "/home/bharat/Documents/AllTec/" )
     medFltrdTec = trObj.apply_median_filter()
     trLocDF = trObj.find_trough_loc(medFltrdTec)
+    print "------------------raw trough----------------------"
+    print trLocDF.head()
     fltrdTrghLocDF = trObj.filter_trough_loc(trLocDF)
-    trObj.plotTecLocTrgh(self, trLocDF, medFltrdTec, \
+    print "------------------filtered trough----------------------"
+    print fltrdTrghLocDF.head()
+    trObj.plotTecLocTrgh( trLocDF, medFltrdTec, \
         "../figs/raw-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
-    trObj.plotTecLocTrgh(self, fltrdTrghLocDF, medFltrdTec, \
+    trObj.plotTecLocTrgh( fltrdTrghLocDF, medFltrdTec, \
         "../figs/fltrd-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
 
 class TroughLocator(object):
@@ -176,6 +180,7 @@ class TroughLocator(object):
         BndPolMlonArr = numpy.array( [] )
         minTecMlonArr = numpy.array( [] )
         minTecValArr = numpy.array( [] )
+        currTimeArr = numpy.array( [] )
 
         glonList = medFltrdTecDF["glon"].unique().tolist()
         for currGLon in glonList:
@@ -251,6 +256,7 @@ class TroughLocator(object):
             minTecMlonArr = numpy.append( minTecMlonArr, [currMinTrghMlon] )
             minTecMlatArr = numpy.append( minTecMlatArr, [currMinTrghMlat] )
             minTecValArr = numpy.append( minTecValArr, tecArr[minTroughLocTec] )
+            currTimeArr = numpy.append( currTimeArr, [ self.nrstTime ] )
         # convert to DF
         trghLocDF = pandas.DataFrame({
             "BndGlon" : BndGlonArr,
@@ -263,7 +269,8 @@ class TroughLocator(object):
             "BndEquMlon" : BndEquMlonArr,
             "BndPolMlon" : BndPolMlonArr,
             "minTecMlon" : minTecMlonArr,
-            "minTecVal" : minTecValArr
+            "minTecVal" : minTecValArr,
+            "date" : currTimeArr
             })
         return trghLocDF
 
@@ -703,6 +710,11 @@ class TroughLocator(object):
         import matplotlib.pyplot as plt
         from matplotlib.colors import ListedColormap
         import seaborn as sns
+        # check if atleast one option is chosen (TEC, loc trough)
+        if ( (not plotTec) & (not plotTrghLoc) ):
+            print "May be a good idea to plot atleast one of" + \
+                    "the options (TEC values or trough location)." +\
+                     "You are simply plotting a map now. Just warning you!!"
         # check the coords, currently we'll only plot mag or geo
         if ( (coords != "mag") & (coords != "geo") ):
             print "can use only 'mag' or 'geo' coords!!!, set them again!"
@@ -728,13 +740,13 @@ class TroughLocator(object):
             cbar.set_label('TEC', size=15)
         if plotTrghLoc:
             if coords == "mag":
-                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndEquMlon"], trghLocDF["BndEquMlat"], coords=coords)
-                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndPolMlon"], trghLocDF["BndPolMlat"], coords=coords)
-                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["minTecMlon"], trghLocDF["minTecMlat"], coords=coords)
+                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndEquMlon"].values, trghLocDF["BndEquMlat"].values, coords=coords)
+                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndPolMlon"].values, trghLocDF["BndPolMlat"].values, coords=coords)
+                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["minTecMlon"].values, trghLocDF["minTecMlat"].values, coords=coords)
             else:
-                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndGlon"], trghLocDF["BndEquGlat"], coords=coords)
-                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndGlon"], trghLocDF["BndPolGlat"], coords=coords)
-                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["BndGlon"], trghLocDF["minTecGlat"], coords=coords)
+                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndGlon"].values, trghLocDF["BndEquGlat"].values, coords=coords)
+                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndGlon"].values, trghLocDF["BndPolGlat"].values, coords=coords)
+                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["BndGlon"].values, trghLocDF["minTecGlat"].values, coords=coords)
             eqPlot = m1.scatter( xVecEquBnd, yVecEquBnd , s=10.,\
                      c='y', marker="^", zorder=7. )
             poPlot = m1.scatter( xVecPolBnd, yVecPolBnd , s=10.,\
