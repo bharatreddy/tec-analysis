@@ -4,6 +4,8 @@ if __name__ == "__main__":
     inpDT = datetime.datetime( 2011, 4, 9, 8, 40 )
     trObj = locateTrough.TroughLocator( inpDT, "/home/bharat/Documents/AllTec/" )
     medFltrdTec = trObj.apply_median_filter()
+    print "----------------------------med filtered tec values---------------------"
+    print medFltrdTec["tec"].min(), medFltrdTec["tec"].max(), medFltrdTec["tec"].mean(), medFltrdTec["tec"].std()
     trLocDF = trObj.find_trough_loc(medFltrdTec)
     print "------------------raw trough----------------------"
     print trLocDF.head()
@@ -104,13 +106,13 @@ class TroughLocator(object):
         import datetime
         import numpy
         import pandas
-        # discard extreme values if option is selected
+        # DF for current time
         currTimeMap = self.dataDF[ self.dataDF["date"] == self.nrstTime ].reset_index(drop=True)
+        # discard extreme values if option is selected
         if discardExtrmVals:
             # Discard tec values which are 2stds away!
-            cutOffLimit = self.dataDF["tec"].mean() + 2*self.dataDF["tec"].std()
+            cutOffLimit = currTimeMap["tec"].mean() + 2*currTimeMap["tec"].std()
             currTimeMap = currTimeMap[ currTimeMap["tec"] <= cutOffLimit ].reset_index(drop=True)
-        # DF for current time
         currTimeMap = currTimeMap[ self.tecFileselCols ]
         # if prevTime is in current day then use same self.dataDF
         # else load a new one.! 
@@ -123,15 +125,15 @@ class TroughLocator(object):
             print "reading from a different date for prev map"
             prevTimeMap = pandas.read_hdf(get_tec_file_from_date(prevTime), 'Data/Table Layout')
             # discard extreme values if option is selected
-            if discardExtrmVals:
-                # Discard tec values which are 2stds away!
-                cutOffLimit = prevTimeMap["tec"].mean() + 2*prevTimeMap["tec"].std()
-                prevTimeMap = prevTimeMap[ prevTimeMap["tec"] <= cutOffLimit ].reset_index(drop=True)
-            prevTimeMap["date"] = pandas.to_datetime(prevTimeMap["year"]*10000000000 +\
-                                            prevTimeMap["month"]*100000000 + prevTimeMap["day"]*1000000 +\
-                                            prevTimeMap["hour"]*10000 + prevTimeMap["min"]*100 +\
-                                            prevTimeMap["sec"],format='%Y%m%d%H%M%S')
-            prevTimeMap = prevTimeMap[ prevTimeMap["date"] == prevTime ].reset_index(drop=True)
+        if discardExtrmVals:
+            # Discard tec values which are 2stds away!
+            cutOffLimit = prevTimeMap["tec"].mean() + 2*prevTimeMap["tec"].std()
+            prevTimeMap = prevTimeMap[ prevTimeMap["tec"] <= cutOffLimit ].reset_index(drop=True)
+        prevTimeMap["date"] = pandas.to_datetime(prevTimeMap["year"]*10000000000 +\
+                                        prevTimeMap["month"]*100000000 + prevTimeMap["day"]*1000000 +\
+                                        prevTimeMap["hour"]*10000 + prevTimeMap["min"]*100 +\
+                                        prevTimeMap["sec"],format='%Y%m%d%H%M%S')
+        prevTimeMap = prevTimeMap[ prevTimeMap["date"] == prevTime ].reset_index(drop=True)
         prevTimeMap = prevTimeMap[ self.tecFileselCols ]
         # same applies for nextTimeMap
         nextTime = self.nrstTime + self.mapDelTime
@@ -143,15 +145,15 @@ class TroughLocator(object):
             print "reading from a different date for next map"
             nextTimeMap = pandas.read_hdf(get_tec_file_from_date(nextTime), 'Data/Table Layout')
             # discard extreme values if option is selected
-            if discardExtrmVals:
-                # Discard tec values which are 2stds away!
-                cutOffLimit = nextTimeMap["tec"].mean() + 2*nextTimeMap["tec"].std()
-                nextTimeMap = nextTimeMap[ nextTimeMap["tec"] <= cutOffLimit ].reset_index(drop=True)
-            nextTimeMap["date"] = pandas.to_datetime(nextTimeMap["year"]*10000000000 +\
-                                            nextTimeMap["month"]*100000000 + nextTimeMap["day"]*1000000 +\
-                                            nextTimeMap["hour"]*10000 + nextTimeMap["min"]*100 +\
-                                            nextTimeMap["sec"],format='%Y%m%d%H%M%S')
-            nextTimeMap = nextTimeMap[ nextTimeMap["date"] == nextTime ].reset_index(drop=True)
+        if discardExtrmVals:
+            # Discard tec values which are 2stds away!
+            cutOffLimit = nextTimeMap["tec"].mean() + 2*nextTimeMap["tec"].std()
+            nextTimeMap = nextTimeMap[ nextTimeMap["tec"] <= cutOffLimit ].reset_index(drop=True)
+        nextTimeMap["date"] = pandas.to_datetime(nextTimeMap["year"]*10000000000 +\
+                                        nextTimeMap["month"]*100000000 + nextTimeMap["day"]*1000000 +\
+                                        nextTimeMap["hour"]*10000 + nextTimeMap["min"]*100 +\
+                                        nextTimeMap["sec"],format='%Y%m%d%H%M%S')
+        nextTimeMap = nextTimeMap[ nextTimeMap["date"] == nextTime ].reset_index(drop=True)
         nextTimeMap = nextTimeMap[ self.tecFileselCols ]
         # return the dataframes in order --> prev, curr, next
         return ( prevTimeMap, currTimeMap, nextTimeMap )
@@ -734,7 +736,7 @@ class TroughLocator(object):
             else:
                 xVec, yVec = m1(list(medFltrdTecDF["glon"]), list(medFltrdTecDF["glat"]), coords=coords)
             tecPlot = m1.scatter( xVec, yVec , c=medFltrdTecDF["tec"], s=40.,\
-                       cmap=seaMap, alpha=0.7, zorder=5., \
+                       cmap=seaMap, alpha=0.7, zorder=5., vmin=0., vmax=40.,\
                                  edgecolor='none', marker="s" )
             cbar = plt.colorbar(tecPlot, orientation='vertical')
             cbar.set_label('TEC', size=15)
