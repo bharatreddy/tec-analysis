@@ -39,7 +39,7 @@ class TroughLocator(object):
         # there are redundant columns we can ignore
         self.tecFileselCols = [ "date", "gdlat", "glon", "tec", "dtec" ]
         # set variables for trough location detection
-        self.equTrghCutoffMLat = 50.
+        self.equTrghCutoffMLat = 45.
         self.polTrghCutoffMLat = 75.
         self.nTecValsLongCutoff = 5.
         # set variables for trough location filtering
