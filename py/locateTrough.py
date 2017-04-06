@@ -3,8 +3,13 @@ if __name__ == "__main__":
     import datetime
     inpDT = datetime.datetime( 2011, 4, 9, 8, 40 )
     trObj = locateTrough.TroughLocator( inpDT, "/home/bharat/Documents/AllTec/" )
-    mfDF = trObj.apply_median_filter()
-    trLocDF = trObj.find_trough_loc(mfDF)
+    medFltrdTec = trObj.apply_median_filter()
+    trLocDF = trObj.find_trough_loc(medFltrdTec)
+    fltrdTrghLocDF = trObj.filter_trough_loc(trLocDF)
+    trObj.plotTecLocTrgh(self, trLocDF, medFltrdTec, \
+        "../figs/raw-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
+    trObj.plotTecLocTrgh(self, fltrdTrghLocDF, medFltrdTec, \
+        "../figs/fltrd-trough-loc-" + inpDT.strftime("%Y%m%d-%H%M") + ".pdf")
 
 class TroughLocator(object):
     """
@@ -31,6 +36,9 @@ class TroughLocator(object):
         self.equTrghCutoffMLat = 40.
         self.polTrghCutoffMLat = 70.
         self.nTecValsLongCutoff = 5.
+        # set variables for trough location filtering
+        self.trghLocGlonbinSize = 10
+        self.trghLocGlonbinCntCutoff = 0.5
         # the ones below are used for median filtering
         self.mapDelTime = datetime.timedelta(seconds=5*60.)#numpy.timedelta64(seconds=50*60.)
         self.filterThrshldCutoff = 0.1#0.33
@@ -153,6 +161,8 @@ class TroughLocator(object):
         import datetime
         import numpy
         import pandas
+        from scipy import signal, ndimage
+        from davitpy import utils
 
         BndGlonArr = numpy.array( [] )
         BndMlonArr = numpy.array( [] )
@@ -223,13 +233,13 @@ class TroughLocator(object):
             # Convert the coords to mlat and mlon
             currEqMlon, currEqMlat = utils.coord_conv( currGLon, latArr[eqBndLoc], \
                                          "geo", "mag", altitude=300., \
-                                         date_time=nrstTime )
+                                         date_time=self.nrstTime )
             currPoMlon, currPoMlat = utils.coord_conv( currGLon, latArr[polBndLoc], \
                                          "geo", "mag", altitude=300., \
-                                         date_time=nrstTime )
+                                         date_time=self.nrstTime )
             currMinTrghMlon, currMinTrghMlat = utils.coord_conv( currGLon, latArr[minTroughLocTec], \
                                          "geo", "mag", altitude=300., \
-                                         date_time=nrstTime )
+                                         date_time=self.nrstTime )
             BndGlonArr = numpy.append( BndGlonArr, [currGLon] )
             BndEquGlatArr = numpy.append( BndEquGlatArr, latArr[eqBndLoc] )
             BndPolGlatArr = numpy.append( BndPolGlatArr, latArr[polBndLoc] )
@@ -243,19 +253,46 @@ class TroughLocator(object):
             minTecValArr = numpy.append( minTecValArr, tecArr[minTroughLocTec] )
         # convert to DF
         trghLocDF = pandas.DataFrame({
-            "BndGlon" = BndGlonArr,
-            "BndEquGlat" = BndEquGlatArr,
-            "BndPolGlat" = BndPolGlatArr,
-            "minTecGlat" = minTecGlatArr,
-            "BndEquMlat" = BndEquMlatArr,
-            "BndPolMlat" = BndPolMlatArr,
-            "minTecMlat" = minTecMlatArr,
-            "BndEquMlon" = BndEquMlonArr,
-            "BndPolMlon" = BndPolMlonArr,
-            "minTecMlon" = minTecMlonArr,
-            "minTecVal" = minTecValArr
+            "BndGlon" : BndGlonArr,
+            "BndEquGlat" : BndEquGlatArr,
+            "BndPolGlat" : BndPolGlatArr,
+            "minTecGlat" : minTecGlatArr,
+            "BndEquMlat" : BndEquMlatArr,
+            "BndPolMlat" : BndPolMlatArr,
+            "minTecMlat" : minTecMlatArr,
+            "BndEquMlon" : BndEquMlonArr,
+            "BndPolMlon" : BndPolMlonArr,
+            "minTecMlon" : minTecMlonArr,
+            "minTecVal" : minTecValArr
             })
         return trghLocDF
+
+    def filter_trough_loc(self,trghLocDF):
+        """
+        Once a trough location has been calculated, we'll find 
+        a few unwated locations in there. Here we'll fitler them out.
+        """
+        import numpy
+        import pandas
+        # Now we need to filter out the trough locs 
+        # which are present in odd locations. We do so
+        # by binning the Glon arr in a groups 10. and count
+        # how many fits we have in each bin. If we have greater
+        # than 50% (actual count=5) values in that bin, we keep
+        # those bins and remove the rest.
+        # check if longitude goes -180 to 180 or 0 to 360.
+        if numpy.min( trghLocDF["BndGlon"].values ) < 0 :
+            minEdge = -180.
+            maxEdge = 180.
+        else:
+            minEdge = 0.
+            maxEdge = 360.
+        binList = [ b for b in numpy.arange(minEdge,maxEdge,self.trghLocGlonbinSize) ]
+        glonFreq, glonBins = numpy.histogram(trghLocDF["BndGlon"].values, bins=binList)
+        goodGlonValues = numpy.where( glonFreq > self.trghLocGlonbinCntCutoff*self.trghLocGlonbinSize )
+        fltrdTrghLocDF = trghLocDF[ ( trghLocDF["BndGlon"] >= numpy.min( glonBins[goodGlonValues] ) ) &\
+                          ( trghLocDF["BndGlon"] <= numpy.max( glonBins[goodGlonValues] ) ) ].reset_index(drop=True)
+        return fltrdTrghLocDF
 
     def apply_median_filter(self):
         """
@@ -265,7 +302,7 @@ class TroughLocator(object):
         import datetime
         import numpy
         import pandas
-        from davitpy.models import *
+        from davitpy.models import aacgm
         from davitpy import utils
         # Setup arrays to store the new results
         newTecGlatArr = []
@@ -646,12 +683,62 @@ class TroughLocator(object):
         gdLatArr = newTECDF["gdlat"].values
         mlon, mlat = utils.coord_conv( gLonArr, gdLatArr, \
                                          "geo", "mag", altitude=300., \
-                                         date_time=nrstTime )
+                                         date_time=self.nrstTime )
         newTECDF["mlon"] = mlon
         newTECDF["mlat"] = mlat
-        newTECDF["mlt"] = [ aacgm.mltFromYmdhms(nrstTime.year, \
-                        nrstTime.month,nrstTime.day, nrstTime.hour,\
-                        nrstTime.minute, nrstTime.second, x) for x in newTECDF["mlon"] ]
+        newTECDF["mlt"] = [ aacgm.mltFromYmdhms(self.nrstTime.year, \
+                        self.nrstTime.month,self.nrstTime.day, self.nrstTime.hour,\
+                        self.nrstTime.minute, self.nrstTime.second, x) for x in newTECDF["mlon"] ]
         newTECDF["normMLT"] = [x-24 if x >= 12\
                      else x for x in newTECDF['mlt']]
         return newTECDF
+
+    def plotTecLocTrgh(self, trghLocDF, medFltrdTecDF, plotFileName, \
+        plotTec=True, plotTrghLoc=True, coords="mag"):
+        """
+        Overlay actual TEC data and trough location (whichever is chosen)
+        on map marked in given coordinates.
+        """
+        from davitpy import utils
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import ListedColormap
+        import seaborn as sns
+        # check the coords, currently we'll only plot mag or geo
+        if ( (coords != "mag") & (coords != "geo") ):
+            print "can use only 'mag' or 'geo' coords!!!, set them again!"
+            return
+        # Seaborn styling
+        sns.set_style("darkgrid")
+        sns.set_context("paper")
+        # set a colorbar
+        seaMap = ListedColormap(sns.color_palette("RdBu_r"))
+        # Plot using matplotlib
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        m1 = utils.plotUtils.mapObj(boundinglat=30., gridLabels=True, coords=coords, ax=ax, datetime=self.nrstTime)
+        if plotTec:
+            if coords == "mag":
+                xVec, yVec = m1(list(medFltrdTecDF["mlon"]), list(medFltrdTecDF["mlat"]), coords=coords)
+            else:
+                xVec, yVec = m1(list(medFltrdTecDF["glon"]), list(medFltrdTecDF["glat"]), coords=coords)
+            tecPlot = m1.scatter( xVec, yVec , c=medFltrdTecDF["tec"], s=40.,\
+                       cmap=seaMap, alpha=0.7, zorder=5., \
+                                 edgecolor='none', marker="s" )
+            cbar = plt.colorbar(tecPlot, orientation='vertical')
+            cbar.set_label('TEC', size=15)
+        if plotTrghLoc:
+            if coords == "mag":
+                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndEquMlon"], trghLocDF["BndEquMlat"], coords=coords)
+                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndPolMlon"], trghLocDF["BndPolMlat"], coords=coords)
+                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["minTecMlon"], trghLocDF["minTecMlat"], coords=coords)
+            else:
+                xVecEquBnd, yVecEquBnd = m1(trghLocDF["BndGlon"], trghLocDF["BndEquGlat"], coords=coords)
+                xVecPolBnd, yVecPolBnd = m1(trghLocDF["BndGlon"], trghLocDF["BndPolGlat"], coords=coords)
+                xVecMinTrghBnd, yVecMinTrghBnd = m1(trghLocDF["BndGlon"], trghLocDF["minTecGlat"], coords=coords)
+            eqPlot = m1.scatter( xVecEquBnd, yVecEquBnd , s=10.,\
+                     c='y', marker="^", zorder=7. )
+            poPlot = m1.scatter( xVecPolBnd, yVecPolBnd , s=10.,\
+                                 c='y', marker="v", zorder=7. )
+            mtPlot = m1.scatter( xVecMinTrghBnd, yVecMinTrghBnd , s=15.,\
+                                 c='r', marker="*", zorder=7. )
+        ax.get_figure().savefig(plotFileName,bbox_inches='tight')
