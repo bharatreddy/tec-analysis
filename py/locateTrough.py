@@ -40,7 +40,7 @@ class TroughLocator(object):
         self.tecFileselCols = [ "date", "gdlat", "glon", "tec", "dtec" ]
         # set variables for trough location detection
         self.equTrghCutoffMLat = 45.
-        self.polTrghCutoffMLat = 75.
+        self.polTrghCutoffMLat = 70.
         self.nTecValsLongCutoff = 5.
         # set variables for trough location filtering
         self.trghLocGlonbinSize = 10
@@ -737,7 +737,7 @@ class TroughLocator(object):
                 xVec, yVec = m1(list(medFltrdTecDF["glon"]), list(medFltrdTecDF["glat"]), coords=coords)
             tecPlot = m1.scatter( xVec, yVec , c=medFltrdTecDF["tec"], s=40.,\
                        cmap=seaMap, alpha=0.7, zorder=5.,\
-                                 edgecolor='none', marker="s" )
+                                 edgecolor='none', marker="s", vmin=0., vmax=40. )
             cbar = plt.colorbar(tecPlot, orientation='vertical')
             cbar.set_label('TEC', size=15)
         if plotTrghLoc:

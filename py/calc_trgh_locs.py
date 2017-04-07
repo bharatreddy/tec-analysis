@@ -26,7 +26,12 @@ if __name__ == "__main__":
                  datetime.datetime( 2011, 8, 6, 2, 30 ),\
                  datetime.datetime( 2011, 8, 6, 3, 0 ),\
                  datetime.datetime( 2011, 8, 6, 3, 30 ),\
-                 datetime.datetime( 2011, 8, 6, 4, 0 ) ]
+                 datetime.datetime( 2011, 8, 6, 4, 0 ),\
+                 datetime.datetime( 2012, 6, 18, 2, 0 ),\
+                 datetime.datetime( 2012, 6, 18, 2, 30 ),\
+                 datetime.datetime( 2012, 6, 18, 3, 0 ),\
+                 datetime.datetime( 2012, 6, 18, 3, 30 ),\
+                 datetime.datetime( 2012, 6, 18, 4, 0 ) ]
     # Store each DF in a list
     rawTrghDFList = []
     fltrdTrghDFList = []
