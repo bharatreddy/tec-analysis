@@ -7,6 +7,7 @@ if __name__ == "__main__":
     import pandas
     import datetime
     import locateTrough
+    import os
     figsFldr = "/home/bharat/Documents/tec-plots/maps/"#"../figs/sel-dates/"
     inpDtList = [ datetime.datetime( 2011, 2, 5, 2, 30 ),\
                  datetime.datetime( 2011, 2, 5, 3, 0 ),\
@@ -67,12 +68,12 @@ if __name__ == "__main__":
                        index=False)
             else:
                 trLocDF.to_csv("../data/rawTrghLoc.txt", sep=' ', mode='a',\
-                       index=False)
+                       index=False, header=False)
             if not os.path.isfile('../data/fltrdTrghLoc.txt'):
-                fltrdTrghDFList.to_csv("../data/fltrdTrghLoc.txt", sep=' ',\
+                fltrdTrghLocDF.to_csv("../data/fltrdTrghLoc.txt", sep=' ',\
                        index=False)
             else:
-                fltrdTrghDFList.to_csv("../data/fltrdTrghLoc.txt", sep=' ', mode='a',\
-                       index=False)
+                fltrdTrghLocDF.to_csv("../data/fltrdTrghLoc.txt", sep=' ', mode='a',\
+                       index=False, header=False)
             del trLocDF
             del fltrdTrghLocDF
