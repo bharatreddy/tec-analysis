@@ -182,6 +182,9 @@ class TroughLocator(object):
         BndPolMlonArr = numpy.array( [] )
         minTecMlonArr = numpy.array( [] )
         minTecValArr = numpy.array( [] )
+        minFltrdTecValArr = numpy.array( [] )
+        BndEquTecValArr = numpy.array( [] )
+        BndPolTecValArr = numpy.array( [] )
         currTimeArr = numpy.array( [] )
 
         glonList = medFltrdTecDF["glon"].unique().tolist()
@@ -258,6 +261,9 @@ class TroughLocator(object):
             minTecMlonArr = numpy.append( minTecMlonArr, [currMinTrghMlon] )
             minTecMlatArr = numpy.append( minTecMlatArr, [currMinTrghMlat] )
             minTecValArr = numpy.append( minTecValArr, tecArr[minTroughLocTec] )
+            minFltrdTecValArr = numpy.append( minFltrdTecValArr, filtTecArr[minTroughLocTec] )
+            BndEquTecValArr = numpy.append( BndEquTecValArr, tecArr[eqBndLoc] )
+            BndPolTecValArr = numpy.append( BndPolTecValArr, tecArr[polBndLoc] )
             currTimeArr = numpy.append( currTimeArr, [ self.nrstTime ] )
         # convert to DF
         trghLocDF = pandas.DataFrame({
@@ -272,6 +278,9 @@ class TroughLocator(object):
             "BndPolMlon" : BndPolMlonArr,
             "minTecMlon" : minTecMlonArr,
             "minTecVal" : minTecValArr,
+            "minFltrdTecVal" : minFltrdTecValArr,
+            "BndEquTecVal" : BndEquTecValArr,
+            "BndPolTecVal" : BndPolTecValArr,
             "date" : currTimeArr
             })
         return trghLocDF
@@ -725,7 +734,7 @@ class TroughLocator(object):
         sns.set_style("darkgrid")
         sns.set_context("paper")
         # set a colorbar
-        seaMap = ListedColormap(sns.color_palette("RdBu_r"))
+        seaMap = ListedColormap(sns.color_palette("Spectral_r"))
         # Plot using matplotlib
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -737,7 +746,7 @@ class TroughLocator(object):
                 xVec, yVec = m1(list(medFltrdTecDF["glon"]), list(medFltrdTecDF["glat"]), coords=coords)
             tecPlot = m1.scatter( xVec, yVec , c=medFltrdTecDF["tec"], s=40.,\
                        cmap=seaMap, alpha=0.7, zorder=5.,\
-                                 edgecolor='none', marker="s", vmin=0., vmax=40. )
+                                 edgecolor='none', marker="s" )
             cbar = plt.colorbar(tecPlot, orientation='vertical')
             cbar.set_label('TEC', size=15)
         if plotTrghLoc:
