@@ -765,3 +765,4 @@ class TroughLocator(object):
             mtPlot = m1.scatter( xVecMinTrghBnd, yVecMinTrghBnd , s=15.,\
                                  c='r', marker="*", zorder=7. )
         ax.get_figure().savefig(plotFileName,bbox_inches='tight')
+        plt.close(fig)
