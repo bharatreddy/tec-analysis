@@ -49,6 +49,8 @@ if __name__ == "__main__":
                  sapsDatesDF['end_time'], format='%Y%m%d:%H%M')
     dateCnt = sapsDatesDF.shape[0]
     for index, row in sapsDatesDF.iterrows():
+        if index < 10:
+            continue
         print "num of days completed/remaining", index,"/", dateCnt
         # We need to iterate over the time range with in the same date
         inpDT = row["start_time"]
