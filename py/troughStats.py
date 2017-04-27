@@ -2,7 +2,7 @@ if __name__ == "__main__":
     import troughStats
     import datetime
     inpDT = datetime.datetime( 2011, 4, 9, 8, 42, 30 )
-    trObj = troughStats.TroughAnlytcs( "../data/test-fltrdTrghLoc.txt" )
+    trObj = troughStats.TroughAnlytcs( "../data/fltrdTrghLoc.txt" )
     trObj.get_fltrd_locs()
     # fltTrDF = trObj.filter_trough_loc(inpDT)
     # inpFileName = "/home/bharat/Documents/tec-plots/trough-bndrs/trghFltrd"\
