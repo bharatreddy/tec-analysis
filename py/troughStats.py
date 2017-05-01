@@ -1,13 +1,13 @@
 if __name__ == "__main__":
     import troughStats
     import datetime
-    inpDT = datetime.datetime( 2011, 4, 9, 8, 42, 30 )
-    trObj = troughStats.TroughAnlytcs( "../data/fltrdTrghLoc.txt" )
-    trObj.get_fltrd_locs()
-    # fltTrDF = trObj.filter_trough_loc(inpDT)
-    # inpFileName = "/home/bharat/Documents/tec-plots/trough-bndrs/trghFltrd"\
-    #                  + inpDT.strftime("%Y%m%d-%H%M") + ".pdf"
-    # trObj.plot_trgh_loc(fltTrDF)
+    inpDT = datetime.datetime( 2011, 4, 9, 9, 0 )
+    trObj = troughStats.TroughAnlytcs( "../data/newRawTrghLoc.txt" )
+    trObj.get_fltrd_locs(saveToCsv=True)
+    fltTrDF = trObj.filter_trough_loc(inpDT)
+    inpFileName = "/home/bharat/Documents/tec-plots/trough-bndrs/trghFltrd"\
+                     + inpDT.strftime("%Y%m%d-%H%M") + ".pdf"
+    trObj.plot_trgh_loc(fltTrDF)
 
 class TroughAnlytcs(object):
     """
@@ -24,7 +24,7 @@ class TroughAnlytcs(object):
         import pandas
         # setup some cutoff vals to be used later
         # only choose the North American sector for analysis
-        self.glonRngNA = [ -165., -60. ]
+        self.mlonRngNA = [ 30., 255. ]
         # We verify if there is continous data availability
         # over extended longitudinal sector. We discard locations
         # with sparse data
@@ -39,9 +39,9 @@ class TroughAnlytcs(object):
                             parse_dates=["date"],\
                                infer_datetime_format=True)
         # select only those longitudes that cover North America
-        self.fltTecDataDF = self.fltTecDataDF[ (self.fltTecDataDF["BndGlon"]\
-                         >= self.glonRngNA[0]) &\
-                      (self.fltTecDataDF["BndGlon"] <= self.glonRngNA[1]) \
+        self.fltTecDataDF = self.fltTecDataDF[ (self.fltTecDataDF["BndMlon"]\
+                         <= self.mlonRngNA[0]) |\
+                      (self.fltTecDataDF["BndMlon"] >= self.mlonRngNA[1]) \
                       ].reset_index(drop=True)
 
     def get_fltrd_locs(self, saveToCsv=True):
@@ -61,7 +61,7 @@ class TroughAnlytcs(object):
             del currTrghLocDF
         trghLocDF = pandas.concat( trghLocDFList )
         if saveToCsv:
-            trghLocDF.to_csv("../data/trghLocFltrd.txt", sep=' ',\
+            trghLocDF.to_csv("../data/finTrghLocFltrd.txt", sep=' ',\
                        index=False)
         return trghLocDF
 
@@ -76,35 +76,35 @@ class TroughAnlytcs(object):
         # select data from the five time
         selTrDF = self.fltTecDataDF[ self.fltTecDataDF["date"] == inpTime ]
         # get a sorted list of glons
-        sortedGlonArr = numpy.sort( selTrDF["BndGlon"] )
+        sortedMlonArr = numpy.sort( selTrDF["BndMlon"] )
         # Identify sudden and big jumps in Long
         # We'll identify jumps by using the gradient
         # Function!
-        glonGradInds = numpy.where( numpy.diff( sortedGlonArr ) > self.jumpCutoff )
+        mlonGradInds = numpy.where( numpy.diff( sortedMlonArr ) > self.jumpCutoff )
         # get the length of the segments
         segLgnthArr = []
         currStrtElmnt = 0
-        for ele in glonGradInds[-1]:
+        for ele in mlonGradInds[-1]:
             segLgnthArr.append( ele - currStrtElmnt )
             currStrtElmnt = ele
-        segLgnthArr.append( len(sortedGlonArr) - currStrtElmnt )
+        segLgnthArr.append( len(sortedMlonArr) - currStrtElmnt )
         # Now choose the segments from the segLgnthArr
         prevSegInd = 0 
-        finTrghGlons = numpy.array( [] )
+        finTrghMlons = numpy.array( [] )
         for currSegLen in segLgnthArr:
             if prevSegInd == 0 :
                 strtElementInd = prevSegInd
             else:
                 strtElementInd = prevSegInd + 1
             endElementInd = prevSegInd + currSegLen
-            if endElementInd == len(sortedGlonArr):
+            if endElementInd == len(sortedMlonArr):
                 endElementInd -= 1
             if currSegLen >= self.segLgthCutoff:
                 segIndsSel = [ prevSegInd , prevSegInd + currSegLen ]
-                finTrghGlons = numpy.append( finTrghGlons, sortedGlonArr[strtElementInd:endElementInd+1] )
+                finTrghMlons = numpy.append( finTrghMlons, sortedMlonArr[strtElementInd:endElementInd+1] )
             prevSegInd = prevSegInd + currSegLen
         # Only include the glons that are selected
-        selTrDF = selTrDF[ selTrDF["BndGlon"].isin( finTrghGlons )\
+        selTrDF = selTrDF[ selTrDF["BndMlon"].isin( finTrghMlons )\
                          ].reset_index(drop=True)
         # Now discard TEC values which are 2 stds away!!!!
         selTrDF = selTrDF[ \
@@ -125,8 +125,8 @@ class TroughAnlytcs(object):
         sns.set_context("paper")
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.plot( trghDF["BndGlon"], trghDF["BndEquGlat"], "b^" )
-        ax.plot( trghDF["BndGlon"], trghDF["minTecGlat"], "ro" )
-        ax.plot( trghDF["BndGlon"], trghDF["BndPolGlat"], "bv" )
+        ax.plot( trghDF["BndMlon"], trghDF["BndEquMlat"], "b^" )
+        ax.plot( trghDF["BndMlon"], trghDF["minTecMlat"], "ro" )
+        ax.plot( trghDF["BndMlon"], trghDF["BndPolMlat"], "bv" )
         ax.get_figure().savefig(plotFileName,bbox_inches='tight')
         plt.close(fig)
