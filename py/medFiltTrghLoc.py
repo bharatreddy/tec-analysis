@@ -27,8 +27,8 @@ class MFTrough(object):
         self.polTrghCutoffMLat = 70.
         self.nTecValsLongCutoff = 5.
         # set variables for trough location filtering
-        self.trghLocGlonbinSize = 10
-        self.trghLocGlonbinCntCutoff = 0.5
+        self.trghLocMlonbinSize = 10
+        self.trghLocMlonbinCntCutoff = 0.5
         # read the tec file for the given datetime
         self.medFltrdTecDF = pandas.read_csv(tecFileName, delim_whitespace=True,\
                                     header=None, names=tecFileselCols)
@@ -163,3 +163,32 @@ class MFTrough(object):
             "date" : currTimeArr
             })
         return trghLocDF
+
+    def filter_trough_loc(self,trghLocDF):
+        """
+        Once a trough location has been calculated, we'll find 
+        a few unwated locations in there. Here we'll fitler them out.
+        """
+        import numpy
+        import pandas
+        # Now we need to filter out the trough locs 
+        # which are present in odd locations. We do so
+        # by binning the Glon arr in a groups 10. and count
+        # how many fits we have in each bin. If we have greater
+        # than 50% (actual count=5) values in that bin, we keep
+        # those bins and remove the rest.
+        # check if longitude goes -180 to 180 or 0 to 360.
+        if numpy.min( trghLocDF["BndMlon"].values ) < 0 :
+            minEdge = -180.
+            maxEdge = 180.
+        else:
+            minEdge = 0.
+            maxEdge = 360.
+        binList = [ b for b in numpy.arange(minEdge,maxEdge,self.trghLocMlonbinSize) ]
+        mlonFreq, mlonBins = numpy.histogram(trghLocDF["BndMlon"].values, bins=binList)
+        goodMlonValues = numpy.where( mlonFreq >= self.trghLocMlonbinCntCutoff*self.trghLocMlonbinSize )
+        if goodMlonValues[0].size == 0:
+            return None
+        fltrdTrghLocDF = trghLocDF[ ( trghLocDF["BndMlon"] >= numpy.min( mlonBins[goodMlonValues] ) ) &\
+                          ( trghLocDF["BndMlon"] <= numpy.max( mlonBins[goodMlonValues] ) ) ].reset_index(drop=True)
+        return fltrdTrghLocDF

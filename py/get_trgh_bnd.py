@@ -17,11 +17,11 @@ if __name__ == "__main__":
             print "currently working with----->", root + fName
             mftrObj = medFiltTrghLoc.MFTrough( root + fName )
             allTimesList = mftrObj.get_all_uniq_times()
-            print allTimesList
             for currTS in numpy.nditer(allTimesList):
                 inpDT = datetime.datetime.utcfromtimestamp(currTS.astype(int)*1e-9)
                 print "current Time--->", inpDT
                 trLocDF = mftrObj.find_trough_loc(inpDT)
+                fltrdTrLocDF = mftrObj.filter_trough_loc(trLocDF)
                 # Write data to the file in append mode...
                 if not os.path.isfile('../data/newRawTrghLoc.txt'):
                     trLocDF.to_csv("../data/newRawTrghLoc.txt", sep=' ',\
@@ -29,10 +29,13 @@ if __name__ == "__main__":
                 else:
                     trLocDF.to_csv("../data/newRawTrghLoc.txt", sep=' ',\
                      mode='a', index=False, header=False)
-                if not os.path.isfile('../data/newFltrdTrghLoc.txt'):
-                    newFltrdTrghLocDF.to_csv("../data/newFltrdTrghLoc.txt",\
-                             sep=' ', index=False)
-                else:
-                    newFltrdTrghLocDF.to_csv("../data/newFltrdTrghLoc.txt",\
-                             sep=' ', mode='a',\
-                           index=False, header=False)
+                if fltrdTrLocDF is not None:
+                    if not os.path.isfile('../data/newFltrdTrghLoc.txt'):
+                        fltrdTrLocDF.to_csv("../data/newFltrdTrghLoc.txt",\
+                                 sep=' ', index=False)
+                    else:
+                        fltrdTrLocDF.to_csv("../data/newFltrdTrghLoc.txt",\
+                                 sep=' ', mode='a',\
+                               index=False, header=False)
+                del trLocDF
+                del fltrdTrLocDF
