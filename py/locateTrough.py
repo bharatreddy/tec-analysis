@@ -3,7 +3,6 @@ if __name__ == "__main__":
     import datetime
     inpDT = datetime.datetime( 2011, 4, 9, 8, 40 )
     trObj = locateTrough.TroughLocator( inpDT, "/home/bharat/Documents/AllTec/" )
-    print "not yet there-->"
     medFltrdTec = trObj.apply_median_filter()
     print "----------------------------med filtered tec values---------------------"
     print medFltrdTec["tec"].min(), medFltrdTec["tec"].max(), medFltrdTec["tec"].mean(), medFltrdTec["tec"].std()
@@ -74,14 +73,11 @@ class TroughLocator(object):
                                     [2., 3., 2.],\
                                     [1., 2., 1.] ] )
         # read the tec file for the given datetime
-        print "begin setting data"
         self.dataDF = pandas.read_hdf(self.get_tec_file_from_date(self.inpDate), 'Data/Table Layout')
-        print "begin setting data 2"
         self.dataDF["date"] = pandas.to_datetime(self.dataDF["year"]*10000000000 +\
                                             self.dataDF["month"]*100000000 + self.dataDF["day"]*1000000 +\
                                             self.dataDF["hour"]*10000 + self.dataDF["min"]*100 +\
                                             self.dataDF["sec"],format='%Y%m%d%H%M%S')
-        print "begin setting data 3"
         # Only take selected datetime
         self.dataDF["selTimeDel"] = abs(self.dataDF["date"] - self.inpDate)
         self.nrstTime = self.dataDF[ self.dataDF["selTimeDel"] == min(self.dataDF["selTimeDel"]) ]["date"].unique()[0]
@@ -337,11 +333,8 @@ class TroughLocator(object):
         # Get a list of lats and lons from currMap
         glatList = currTimeMap["gdlat"].unique()
         glonList = currTimeMap["glon"].unique()
-        print "step0"
         for selGlat in glatList:
-            print "glat-->", selGlat
             for selGlon in glonList:
-                print "selGlon-->", selGlon
                 if abs(selGlat) < self.medFiltstartLat:
                     continue
                 # Get corresponding data from the current cells
