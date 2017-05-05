@@ -6,7 +6,7 @@ common tec_data_blk
 
 baseDir = '/home/bharatr/Docs/data/tecMedFilt-alldata/'
 
-date_rng = [ 20110101, 20141231 ]
+date_rng = [ 20110601, 20141231 ]
 timeRange=[0000,1200]
 
 
