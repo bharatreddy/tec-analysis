@@ -41,6 +41,8 @@ if __name__ == "__main__":
     fltTecDataDF["AdjBndMlon"] = [ x if x <=180. else x-360. for x in fltTecDataDF["BndMlon"] ]
     for currTS in numpy.nditer(fltTecDataDF["date"].unique()):
         inpDT = datetime.datetime.utcfromtimestamp(currTS.astype(int)*1e-9)
+        if inpDT != datetime.datetime( 2011, 4, 9, 9, 30 ):
+            continue
         print "current Time--->", inpDT
         # Read actual median filtered tec data for the given date and time
         mfTecDir = "/home/bharat/Documents/medFiltTec/"
@@ -68,12 +70,12 @@ if __name__ == "__main__":
            cmap=seaMap, alpha=0.7, zorder=5., \
                      edgecolor='none', marker="s", vmin=0., vmax=20. )
 
-        eqPlot = m1.scatter( xVecEquBnd, yVecEquBnd , s=10.,\
-                             c='y', marker="^", zorder=7. )
-        poPlot = m1.scatter( xVecPolBnd, yVecPolBnd , s=10.,\
-                             c='y', marker="v", zorder=7. )
-        mtPlot = m1.scatter( xVecMinTrghBnd, yVecMinTrghBnd , s=15.,\
-                             c='r', marker="*", zorder=7. )
+        eqPlot = m1.scatter( xVecEquBnd, yVecEquBnd , s=20.,\
+                             c='k', marker="^", zorder=7. )
+        poPlot = m1.scatter( xVecPolBnd, yVecPolBnd , s=20.,\
+                             c='k', marker="v", zorder=7. )
+        mtPlot = m1.scatter( xVecMinTrghBnd, yVecMinTrghBnd , s=20.,\
+                             c='darkorchid', marker="*", zorder=7. )
 
         cbar = plt.colorbar(tecPlot, orientation='vertical')
         cbar.set_label('TEC', size=15)
