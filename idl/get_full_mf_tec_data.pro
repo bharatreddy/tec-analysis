@@ -6,8 +6,8 @@ common tec_data_blk
 
 baseDir = '/home/bharatr/Docs/data/tecMedFilt-alldata/'
 
-date_rng = [ 20110601, 20141231 ]
-timeRange=[0000,1200]
+date_rng = [ 20150101, 20151231 ]
+timeRange=[0000,2400]
 
 
 dt_skip_time=5.d ;;; we search data the grd file every 5 min
